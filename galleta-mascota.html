@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galleta — Tu mascota virtual</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#8E6BFF; --bg2:#5B9BE8; --panel:#ffffff; --ink:#2B2340; --ink-2:#8B87A6;
+  --line:#EDEAF7; --good:#3FBFA9; --warn:#E8912B; --bad:#E05B4C; --fun:#5B9BE8;
+  --tuki:#C89B6B; --tuki-dark:#8C5E32; --font:"Baloo 2",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:var(--font);background:linear-gradient(160deg,var(--bg1),var(--bg2));display:flex;justify-content:center;padding:16px}
+.phone{width:400px;max-width:100%;background:var(--panel);border-radius:28px;box-shadow:0 30px 60px rgba(0,0,0,.35);overflow:hidden;color:var(--ink)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;font-weight:800}
+.brand{font-size:19px;display:flex;align-items:center;gap:6px}
+.stat-chip{display:flex;gap:8px}
+.chip{display:flex;align-items:center;gap:5px;background:#F6F4FF;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700}
+#lvl{color:#8E6BFF}#coins{color:#D89B1E}
+
+.stage{position:relative;height:230px;margin:6px 16px 10px;border-radius:22px;background:linear-gradient(180deg,#EAF6FF,#DDEFFB);overflow:hidden;transition:background .5s}
+.stage.night{background:linear-gradient(180deg,#28275B,#3A3A7A)}
+.floor{position:absolute;bottom:0;left:0;right:0;height:34px;background:#CDEAD8}
+.pet{position:absolute;left:50%;bottom:34px;width:110px;height:100px;margin-left:-55px;transition:transform .3s}
+.body{width:100%;height:100%;background:linear-gradient(160deg,var(--tuki),var(--tuki-dark));border-radius:50% 50% 46% 46% / 60% 60% 40% 40%;position:relative;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.eye{position:absolute;top:32px;width:22px;height:26px;background:#2B2340;border-radius:50%}
+.eye.l{left:22px}.eye.r{left:66px}
+.eye::after{content:"";position:absolute;top:4px;left:5px;width:7px;height:7px;background:#fff;border-radius:50%}
+.mouth{position:absolute;left:50%;top:62px;width:26px;height:12px;margin-left:-13px;background:#2B2340;border-radius:0 0 13px 13px}
+.cheek{position:absolute;top:52px;width:12px;height:7px;border-radius:50%;background:#FF9EC0;opacity:.7}
+.cheek.l{left:8px}.cheek.r{left:90px}
+.antenna{position:absolute;top:-14px;left:50%;width:4px;height:18px;background:var(--tuki-dark);border-radius:4px}
+.antenna::after{content:"";position:absolute;top:-6px;left:-3px;width:10px;height:10px;background:var(--tuki);border-radius:50%}
+.dirt{position:absolute;width:10px;height:8px;background:#8a6b3d;border-radius:50%;opacity:.75}
+
+/* estados de ánimo */
+.pet.sleepy .eye{height:3px;top:42px;border-radius:3px}
+.pet.sleepy .mouth{height:6px;border-radius:6px}
+.pet.happy .mouth{height:16px;width:34px;margin-left:-17px;border-radius:0 0 18px 18px}
+.pet.sad .mouth{transform:rotate(180deg) translateY(-14px)}
+.pet.sad .eye::after{top:14px}
+.pet.angry .body{filter:hue-rotate(-18deg) saturate(1.3)}
+.pet.angry .eye{transform:skewX(-8deg)}
+.pet.hungry .mouth{width:14px;margin-left:-7px;height:14px;border-radius:50%}
+.zzz{position:absolute;font-weight:800;color:#fff;font-size:15px;opacity:0;pointer-events:none}
+.bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,.75);pointer-events:none}
+.food-fx{position:absolute;font-size:22px;pointer-events:none;transition:transform .6s ease, opacity .6s ease}
+
+.bars{padding:0 16px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.bar{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--ink-2)}
+.track{flex:1;height:9px;background:var(--line);border-radius:99px;overflow:hidden}
+.fill{height:100%;border-radius:99px;transition:width .4s}
+.msg{text-align:center;font-weight:700;color:#8E6BFF;font-size:13px;min-height:18px;margin-bottom:4px}
+
+.tabs{display:flex;border-top:1px solid var(--line)}
+.tab{flex:1;padding:10px 4px 8px;text-align:center;background:none;border:0;font-family:var(--font);font-weight:700;font-size:11.5px;color:var(--ink-2)}
+.tab.active{color:#8E6BFF;background:#F6F4FF}
+.tab b{display:block;font-size:20px}
+.room{padding:14px 16px 18px;display:none}
+.room.active{display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;background:#FBFAFF}
+.card .ico{font-size:28px}
+.card b{display:block;font-size:13px;margin:4px 0 2px}
+.card small{color:var(--ink-2);font-size:11px}
+.card button{margin-top:7px;width:100%;border:0;border-radius:9px;padding:7px;background:#8E6BFF;color:#fff;font-family:var(--font);font-weight:700;font-size:12px}
+.card button:disabled{background:#CFC9E0}
+.bigbtn{width:100%;border:0;border-radius:14px;padding:14px;background:linear-gradient(135deg,#8E6BFF,#5B9BE8);color:#fff;font-family:var(--font);font-weight:800;font-size:15px;margin-bottom:8px}
+.hint{color:var(--ink-2);font-size:12.5px;text-align:center;margin-bottom:8px}
+.playfield{position:relative;height:200px;background:#EAF6FF;border-radius:14px;overflow:hidden;margin-bottom:10px}
+.basket{position:absolute;bottom:6px;width:54px;height:26px;background:#8E6BFF;border-radius:10px 10px 6px 6px;left:50%;margin-left:-27px}
+.score{position:absolute;top:6px;right:10px;font-weight:800;color:#8E6BFF;font-size:13px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top">
+    <div class="brand">🍪 Galleta</div>
+    <div class="stat-chip"><div class="chip" id="lvl">Nivel 1</div><div class="chip" id="coins">🪙 20</div></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="pet" id="pet">
+      <div class="body">
+        <div class="antenna"></div>
+        <div class="eye l"></div><div class="eye r"></div>
+        <div class="cheek l"></div><div class="cheek r"></div>
+        <div class="mouth"></div>
+      </div>
+    </div>
+    <div class="floor"></div>
+  </div>
+  <p class="msg" id="msg">¡Hola! Soy Galleta 👋 Cuídame bien.</p>
+
+  <div class="bars">
+    <div class="bar">🍔<div class="track"><div class="fill" id="bHambre" style="width:80%;background:var(--warn)"></div></div></div>
+    <div class="bar">⚡<div class="track"><div class="fill" id="bEnergia" style="width:80%;background:var(--fun)"></div></div></div>
+    <div class="bar">🎮<div class="track"><div class="fill" id="bDiversion" style="width:80%;background:#B77BE0"></div></div></div>
+    <div class="bar">🧼<div class="track"><div class="fill" id="bHigiene" style="width:80%;background:var(--good)"></div></div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-r="cocina"><b>🍳</b>Cocina</button>
+    <button class="tab" data-r="dormitorio"><b>🛏️</b>Dormir</button>
+    <button class="tab" data-r="juegos"><b>🎮</b>Juegos</button>
+    <button class="tab" data-r="bano"><b>🧼</b>Baño</button>
+  </div>
+
+  <div class="room active" id="cocina">
+    <div class="grid">
+      <div class="card"><div class="ico">🍎</div><b>Manzana</b><small>+15 hambre · sano</small><button data-food="manzana" data-h="15" data-s="2">Dar</button></div>
+      <div class="card"><div class="ico">🍔</div><b>Hamburguesa</b><small>+30 hambre · grasosa</small><button data-food="burger" data-h="30" data-s="-5">Dar</button></div>
+      <div class="card"><div class="ico">🧪</div><b>Poción</b><small>+40 salud · cuesta 15🪙</small><button data-food="pocion" data-h="0" data-s="40" data-cost="15">Dar</button></div>
+      <div class="card"><div class="ico">🍩</div><b>Dona</b><small>+10 hambre · +5 diversión</small><button data-food="dona" data-h="10" data-s="0" data-f="5">Dar</button></div>
+    </div>
+  </div>
+
+  <div class="room" id="dormitorio">
+    <p class="hint">Apaga la luz para que Galleta duerma y recupere energía.</p>
+    <button class="bigbtn" id="luz">💡 Apagar la luz</button>
+  </div>
+
+  <div class="room" id="juegos">
+    <p class="hint">Mueve la canasta con el mouse o el dedo. Atrapa la comida 20 s.</p>
+    <button class="bigbtn" id="iniciarJuego">▶️ Jugar (30 s ronda)</button>
+    <div class="playfield" id="playfield" style="display:none">
+      <div class="score" id="score">0</div>
+      <div class="basket" id="basket"></div>
+    </div>
+  </div>
+
+  <div class="room" id="bano">
+    <p class="hint">Dale una ducha a Galleta si está sucio para subir su higiene.</p>
+    <button class="bigbtn" id="ducha">🚿 Dar ducha</button>
+  </div>
+</div>
+
+<script>
+const stats={hambre:80,energia:80,diversion:80,higiene:80};
+let coins=20, nivel=1, dormido=false, sucio=false, jugando=false;
+const pet=document.getElementById("pet"),stage=document.getElementById("stage"),msg=document.getElementById("msg");
+const bars={hambre:bHambre,energia:bEnergia,diversion:bDiversion,higiene:bHigiene};
+const clamp=n=>Math.max(0,Math.min(100,n));
+
+function decir(t){msg.textContent=t}
+function actualizarUI(){
+  for(const k in stats) bars[k].style.width=stats[k]+"%";
+  document.getElementById("coins").textContent="🪙 "+coins;
+  document.getElementById("lvl").textContent="Nivel "+nivel;
+}
+function subirNivel(){
+  const need=nivel*50;
+  if(coins>=need){nivel++;decir("¡Galleta subió a nivel "+nivel+"! 🎉")}
+}
+function humor(){
+  pet.classList.remove("happy","sad","sleepy","angry","hungry");
+  stage.classList.toggle("night",dormido);
+  if(dormido){pet.classList.add("sleepy");return}
+  if(sucio && stats.higiene<35){pet.classList.add("angry");decir("¡Estoy sucio, necesito una ducha! 🧼");return}
+  const min=Math.min(stats.hambre,stats.energia,stats.diversion,stats.higiene);
+  if(stats.hambre<30){pet.classList.add("hungry");decir("Tengo hambre… 🍔");return}
+  if(stats.energia<30){pet.classList.add("sad");decir("Estoy muy cansado 😴");return}
+  if(stats.diversion<30){pet.classList.add("sad");decir("Qué aburrido… ¿jugamos? 🎮");return}
+  if(min>70){pet.classList.add("happy");decir("¡Me siento genial! 😄");return}
+  decir("Todo tranquilo por aquí.");
+}
+
+/* decaimiento natural */
+setInterval(()=>{
+  if(!dormido){
+    stats.hambre=clamp(stats.hambre-3);
+    stats.energia=clamp(stats.energia-2);
+    stats.diversion=clamp(stats.diversion-2);
+    stats.higiene=clamp(stats.higiene-(sucio?4:1));
+    if(stats.higiene<40 && Math.random()<.3) sucio=true;
+    if(Math.min(stats.hambre,stats.energia,stats.diversion,stats.higiene)>70 && Math.random()<.4) coins++;
+  }else{
+    stats.energia=clamp(stats.energia+6);
+    if(stats.energia>=95){dormido=false;document.getElementById("luz").textContent="💡 Apagar la luz"}
+  }
+  subirNivel();actualizarUI();humor();
+},2200);
+
+/* zzz mientras duerme */
+setInterval(()=>{
+  if(!dormido)return;
+  const z=document.createElement("div");z.className="zzz";z.textContent="Z";
+  z.style.left=(55+Math.random()*20)+"%";z.style.top="20%";
+  stage.appendChild(z);
+  z.style.transition="transform 1.6s ease-out, opacity 1.6s ease-out";
+  requestAnimationFrame(()=>{z.style.opacity="1";z.style.transform="translateY(-40px)"});
+  setTimeout(()=>z.style.opacity="0",1100);
+  setTimeout(()=>z.remove(),1700);
+},700);
+
+/* --- Tabs / habitaciones --- */
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));
+  document.querySelectorAll(".room").forEach(r=>r.classList.toggle("active",r.id===t.dataset.r));
+});
+
+/* --- Cocina --- */
+document.querySelectorAll("[data-food]").forEach(b=>b.onclick=()=>{
+  if(dormido){decir("Galleta está dormido 💤");return}
+  const cost=+b.dataset.cost||0;
+  if(coins<cost){decir("No tienes suficientes monedas 🪙");return}
+  coins-=cost;
+  stats.hambre=clamp(stats.hambre+(+b.dataset.h));
+  stats.higiene=clamp(stats.higiene+(+b.dataset.s));
+  stats.diversion=clamp(stats.diversion+(+(b.dataset.f||0)));
+  pet.classList.add("happy");setTimeout(()=>pet.classList.remove("happy"),900);
+  const fx=document.createElement("div");fx.className="food-fx";fx.textContent=b.parentElement.querySelector(".ico").textContent;
+  fx.style.left="45%";fx.style.top="-10px";stage.appendChild(fx);
+  requestAnimationFrame(()=>{fx.style.transform="translateY(140px)";fx.style.opacity="0"});
+  setTimeout(()=>fx.remove(),650);
+  actualizarUI();humor();
+});
+
+/* --- Dormitorio --- */
+document.getElementById("luz").onclick=()=>{
+  dormido=!dormido;
+  document.getElementById("luz").textContent=dormido?"💡 Encender la luz":"💡 Apagar la luz";
+  decir(dormido?"Shh… Galleta se está durmiendo 💤":"¡Buenos días! ☀️");
+  humor();
+};
+
+/* --- Baño --- */
+document.getElementById("ducha").onclick=()=>{
+  if(dormido){decir("Galleta está dormido 💤");return}
+  sucio=false;
+  stats.higiene=100;
+  for(let i=0;i<8;i++){
+    const bub=document.createElement("div");bub.className="bubble";
+    const s=8+Math.random()*10;bub.style.width=bub.style.height=s+"px";
+    bub.style.left=(35+Math.random()*35)+"%";bub.style.bottom="30px";
+    stage.appendChild(bub);
+    bub.style.transition="transform 1s ease-out, opacity 1s ease-out";
+    requestAnimationFrame(()=>{bub.style.transform="translateY(-90px)";bub.style.opacity="0"});
+    setTimeout(()=>bub.remove(),1100);
+  }
+  decir("¡Squeaky clean! 🚿");
+  actualizarUI();humor();
+};
+
+/* --- Sala de juegos: atrapa la comida --- */
+const pf=document.getElementById("playfield"),basket=document.getElementById("basket"),scoreEl=document.getElementById("score");
+document.getElementById("iniciarJuego").onclick=()=>{
+  if(dormido){decir("Galleta está dormido 💤");return}
+  if(jugando)return;
+  jugando=true;pf.style.display="block";let score=0,t=30,spawner,tick;
+  scoreEl.textContent="0";
+  pf.onmousemove=e=>{const r=pf.getBoundingClientRect();basket.style.left=Math.max(0,Math.min(r.width-54,e.clientX-r.left-27))+"px";basket.style.marginLeft="0"};
+  pf.ontouchmove=e=>{const r=pf.getBoundingClientRect(),x=e.touches[0].clientX-r.left;basket.style.left=Math.max(0,Math.min(r.width-54,x-27))+"px";basket.style.marginLeft="0"};
+
+  function caeComida(){
+    const el=document.createElement("div");el.className="food-fx";
+    el.textContent=["🍎","🍪","🍇","🍔"][Math.floor(Math.random()*4)];
+    el.style.left=Math.random()*85+"%";el.style.top="0px";
+    pf.appendChild(el);
+    let y=0;
+    const fall=setInterval(()=>{
+      y+=6;el.style.top=y+"px";
+      const br=basket.getBoundingClientRect(),er=el.getBoundingClientRect();
+      if(er.bottom>=br.top && er.left<br.right && er.right>br.left){
+        score++;scoreEl.textContent=score;el.remove();clearInterval(fall);
+      } else if(y>200){el.remove();clearInterval(fall)}
+    },30);
+  }
+  spawner=setInterval(caeComida,650);
+  tick=setInterval(()=>{
+    t--;
+    if(t<=0){
+      clearInterval(spawner);clearInterval(tick);jugando=false;pf.style.display="none";
+      const ganado=Math.round(score*2);coins+=ganado;
+      stats.diversion=clamp(stats.diversion+Math.min(40,score*4));
+      decir("¡Juego terminado! Ganaste "+ganado+" 🪙");
+      actualizarUI();humor();
+    }
+  },1000);
+};
+
+actualizarUI();humor();
+</script>
+</body>
+</html>
